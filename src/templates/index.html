@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}ShortURL - Shorten Your Links{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="py-24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-3xl mx-auto text-center">
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-heading font-bold mb-6">
+                Shorten Your Links,<br>
+                <span class="text-primary">Expand Your Reach</span>
+            </h1>
+            <p class="text-base sm:text-lg text-text-muted mb-12">
+                Production-grade URL shortener for developers. Fast, reliable, and analytics-ready.
+            </p>
+
+            <!-- URL Shortening Form -->
+            <div class="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-xl p-8 mb-8">
+                <form id="shortenForm" class="space-y-4">
+                    <div>
+                        <input
+                            type="url"
+                            id="originalUrl"
+                            placeholder="Enter your long URL here..."
+                            class="w-full bg-zinc-900/50 border-2 border-zinc-700 focus:border-indigo-500 text-white text-lg placeholder:text-zinc-500 rounded-xl py-4 px-6 outline-none transition-all shadow-inner font-mono"
+                            required
+                            data-testid="url-input"
+                        />
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <input
+                            type="text"
+                            id="customAlias"
+                            placeholder="Custom alias (optional)"
+                            class="flex-1 bg-zinc-900 border border-zinc-700 focus:border-indigo-500 text-white rounded-lg py-3 px-4 outline-none transition-all"
+                            pattern="[a-zA-Z0-9-]+"
+                            title="Only letters, numbers, and hyphens allowed"
+                            data-testid="custom-alias-input"
+                        />
+                        <button
+                            type="submit"
+                            class="bg-indigo-500 hover:bg-indigo-600 text-white font-medium py-3 px-8 rounded-lg transition-all duration-200 shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_30px_rgba(99,102,241,0.5)]"
+                            data-testid="shorten-button"
+                        >
+                            <span class="flex items-center justify-center gap-2">
+                                <i data-lucide="zap" class="w-5 h-5"></i>
+                                Shorten
+                            </span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Result Display -->
+                <div id="resultSection" class="hidden mt-6 p-4 bg-zinc-800 rounded-lg border border-zinc-700">
+                    <div class="flex items-center justify-between gap-4">
+                        <div class="flex-1">
+                            <p class="text-xs text-zinc-400 mb-1">Your shortened URL:</p>
+                            <a id="shortUrlLink" href="#" target="_blank" class="text-primary font-mono text-lg hover:underline" data-testid="short-url-link"></a>
+                        </div>
+                        <button
+                            onclick="copyToClipboard()"
+                            class="p-2 rounded-md hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
+                            data-testid="copy-button"
+                            title="Copy to clipboard"
+                        >
+                            <i data-lucide="copy" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-sm text-zinc-500">
+                {% if user %}
+                    Creating links as <span class="text-primary">{{ user.email }}</span>
+                {% else %}
+                    Creating anonymous links. <a href="/api/signup" class="text-primary hover:underline">Sign up</a> to manage your links.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-24 border-t border-zinc-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl sm:text-4xl font-heading font-bold mb-4">Why Choose ShortURL?</h2>
+            <p class="text-text-muted">Production-grade features for modern developers</p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6">
+            <div class="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-xl p-6 hover:border-zinc-700 transition-colors">
+                <div class="w-12 h-12 bg-indigo-500/10 rounded-lg flex items-center justify-center mb-4">
+                    <i data-lucide="zap" class="w-6 h-6 text-indigo-500"></i>
+                </div>
+                <h3 class="text-xl font-heading font-bold mb-2">Lightning Fast</h3>
+                <p class="text-zinc-400">Built with FastAPI for blazing fast redirects and minimal latency.</p>
+            </div>
+
+            <div class="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-xl p-6 hover:border-zinc-700 transition-colors">
+                <div class="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center mb-4">
+                    <i data-lucide="bar-chart" class="w-6 h-6 text-green-500"></i>
+                </div>
+                <h3 class="text-xl font-heading font-bold mb-2">Analytics Ready</h3>
+                <p class="text-zinc-400">Track clicks, referrers, and performance metrics in real-time.</p>
+            </div>
+
+            <div class="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-xl p-6 hover:border-zinc-700 transition-colors">
+                <div class="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center mb-4">
+                    <i data-lucide="shield-check" class="w-6 h-6 text-purple-500"></i>
+                </div>
+                <h3 class="text-xl font-heading font-bold mb-2">Production Grade</h3>
+                <p class="text-zinc-400">Kubernetes-ready with health checks and SQLite reliability.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentShortUrl = '';
+
+document.getElementById('shortenForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const originalUrl = document.getElementById('originalUrl').value;
+    const customAlias = document.getElementById('customAlias').value;
+    
+    try {
+        const response = await fetch('/api/shorten', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+                original_url: originalUrl,
+                custom_alias: customAlias || null
+            })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            showToast(error.detail || 'Failed to shorten URL', 'error');
+            return;
+        }
+        
+        const data = await response.json();
+        const shortUrl = window.location.origin + '/' + data.short_code;
+        currentShortUrl = shortUrl;
+        
+        // Display result
+        document.getElementById('shortUrlLink').href = shortUrl;
+        document.getElementById('shortUrlLink').textContent = shortUrl;
+        document.getElementById('resultSection').classList.remove('hidden');
+        
+        // Re-initialize icons
+        lucide.createIcons();
+        
+        showToast('URL shortened successfully!', 'success');
+    } catch (error) {
+        console.error('Error:', error);
+        showToast('Failed to shorten URL', 'error');
+    }
+});
+
+function copyToClipboard() {
+    if (!currentShortUrl) return;
+    
+    navigator.clipboard.writeText(currentShortUrl).then(() => {
+        showToast('Copied to clipboard!', 'success');
+    }).catch(() => {
+        showToast('Failed to copy', 'error');
+    });
+}
+</script>
+{% endblock %}

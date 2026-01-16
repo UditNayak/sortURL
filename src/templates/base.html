@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}URL Shortener{% endblock %}</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#09090b',
+                        surface: '#18181b',
+                        'surface-highlight': '#27272a',
+                        border: '#27272a',
+                        primary: '#6366f1',
+                        'primary-foreground': '#ffffff',
+                        secondary: '#22c55e',
+                        'text-main': '#f4f4f5',
+                        'text-muted': '#a1a1aa',
+                        'accent-error': '#ef4444'
+                    },
+                    fontFamily: {
+                        sans: ['DM Sans', 'sans-serif'],
+                        heading: ['Space Grotesk', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'DM Sans', sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+    </style>
+</head>
+<body class="bg-background text-text-main antialiased">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-8">
+                    <a href="/api/home" class="flex items-center gap-2">
+                        <i data-lucide="link" class="w-6 h-6 text-primary"></i>
+                        <span class="text-xl font-heading font-bold">ShortURL</span>
+                    </a>
+                    <div class="hidden md:flex items-center gap-6">
+                        <a href="/api/home" class="text-sm font-medium text-zinc-400 hover:text-white transition-colors" data-testid="nav-home-link">Home</a>
+                        <a href="/api/dashboard" class="text-sm font-medium text-zinc-400 hover:text-white transition-colors" data-testid="nav-dashboard-link">Dashboard</a>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    {% if user %}
+                        <span class="text-sm text-zinc-400" data-testid="user-email-display">{{ user.email }}</span>
+                        <button onclick="logout()" class="text-sm font-medium text-zinc-400 hover:text-white transition-colors" data-testid="logout-button">Logout</button>
+                    {% else %}
+                        <a href="/api/login" class="text-sm font-medium text-zinc-400 hover:text-white transition-colors" data-testid="login-link">Login</a>
+                        <a href="/api/signup" class="bg-indigo-500 hover:bg-indigo-600 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 text-sm" data-testid="signup-link">Sign Up</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-16">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-zinc-800 mt-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="link" class="w-5 h-5 text-primary"></i>
+                    <span class="text-sm text-zinc-400">ShortURL - Production-grade URL shortener</span>
+                </div>
+                <div class="text-sm text-zinc-500">
+                    Built with FastAPI + Python
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Logout function
+        async function logout() {
+            try {
+                const response = await fetch('/api/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    window.location.href = '/api/home';
+                }
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        }
+
+        // Toast notification function
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg text-white font-medium shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-600' : 'bg-red-600'
+            }`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>
