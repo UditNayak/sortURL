@@ -8,19 +8,34 @@ This document explains the organization of the `shortURL` project and the purpos
 
 ```
 shortURL/
-├── .gitignore # Git ignore rules
-├── .env.example # Template env file (committed)
-├── .env.local # Local env (ignored)
-├── .env.production # Production env (ignored)
-├── .env.test # Test env (optional, ignored)
-├── data/ # Runtime data (ignored)
-│   └── url_shortener.db # SQLite database (auto-created)
-├── docs/ # Project documentation
-│   ├── setup.md # Setup & local development guide
-│   ├── api.md # API endpoints & usage
-│   └── structure.md # Project structure explanation
-├── src/ # Main application source code
-└── README.md # Entry-point documentation
+├── .gitignore                     # Git ignore rules
+├── .env.example                   # Template env file (committed)
+├── .env.local                     # Local env (ignored)
+├── .env.production                # Production env (ignored)
+├── .env.test                      # Test environment variables
+│
+├── pytest.ini                     # Pytest configuration
+│
+├── data/                          # Runtime data (ignored)
+│   └── test.db                    # SQLite test database (auto-created)
+│
+├── docs/                          # Project documentation
+│   ├── setup.md                   # Setup & local development guide
+|   ├── test.md                    # Testing guide
+│   ├── api.md                     # API endpoints & usage
+│   └── structure.md               # Project structure explanation
+│
+├── src/                           # Main application source code
+│
+├── tests/                         # Test suite
+│   ├── conftest.py
+│   ├── test_api.py
+│   ├── test_services.py
+│   ├── test_utils.py
+│
+├── README.md                      # Entry-point documentation
+└── venv/                          # Virtual environment (ignored)
+
 ```
 
 ## `src/` Directory
