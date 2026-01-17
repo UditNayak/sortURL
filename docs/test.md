@@ -82,3 +82,10 @@ pytest -v --cov=src
 - Core API endpoints respond as expected
 - URL shortening logic works
 - Utility functions behave correctly
+
+## Linting
+Run linting with:
+
+```bash
+ruff check src tests
+```

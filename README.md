@@ -68,6 +68,7 @@ Detailed documentation is split into small, focused files:
 - **Setup & Environment →** [docs/setup.md](docs/setup.md)
 - **API Endpoints & Usage →** [docs/api.md](docs/api.md)
 - **Project Structure →** [docs/structure.md](docs/structure.md)
+- **Testing Guide →** [docs/test.md](docs/test.md)
 
 
 ## 🩺 Health Endpoints

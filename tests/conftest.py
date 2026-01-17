@@ -1,12 +1,14 @@
 import os
+
 import pytest
 from fastapi.testclient import TestClient
 
-# Force test env
-os.environ["ENV"] = "test"
-
 from src.main import app
 from src.database import init_database
+
+
+# Set test environment
+os.environ["ENV"] = "test"
 
 
 @pytest.fixture(scope="session", autouse=True)
