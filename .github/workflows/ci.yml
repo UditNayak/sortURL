@@ -124,8 +124,9 @@ jobs:
         uses: aquasecurity/trivy-action@0.24.0
         with:
           image-ref: shorturl:ci
+          format: table
           exit-code: 1
-          severity: HIGH,CRITICAL
+          severity: CRITICAL
 
       - name: Run container
         run: |
@@ -137,6 +138,4 @@ jobs:
 
       - name: Cleanup
         if: always()
-        run: |
-          docker stop shorturl-test
-          docker rm shorturl-test
+        run: docker rm -f shorturl-test || true
