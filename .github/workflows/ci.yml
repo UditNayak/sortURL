@@ -82,13 +82,13 @@ jobs:
           project: "shortURL"
           path: "."
           format: "HTML"
-          out: "dependency-check-report"
+          out: "reports"
 
       - name: Upload Dependency Check Report
         uses: actions/upload-artifact@v4
         with:
           name: dependency-check-report
-          path: dependency-check-report
+          path: reports
 
   secrets-scan:
     name: Secrets Scan (Gitleaks)
