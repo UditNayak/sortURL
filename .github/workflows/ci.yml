@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
 
 jobs:
@@ -19,6 +19,8 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: "pip"                # Enables dependency caching
+          cache-dependency-path: src/requirements.txt
 
       - name: Install dependencies
         run: |
@@ -33,4 +35,12 @@ jobs:
         env:
           ENV: test
         run: |
-          pytest -v --cov=src
+          pytest -v --cov=src --cov-report=term-missing
+          
+          # -------------------------------
+          # Coverage Threshold (INTENTIONALLY DISABLED)
+          #
+          # To enable later, uncomment:
+          #
+          # pytest -v --cov=src --cov-fail-under=80
+          # -------------------------------
