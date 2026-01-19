@@ -83,6 +83,7 @@ jobs:
           path: "src/requirements.txt"
           format: "HTML"
           args: >
+            --enableExperimental
             --out reports
 
       - name: Upload Dependency Check Report
