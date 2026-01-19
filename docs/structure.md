@@ -9,6 +9,8 @@ This document explains the organization of the `shortURL` project and the purpos
 ```
 shortURL/
 ├── .gitignore                     # Git ignore rules
+│   └── workflow/                  # CI workflow files
+│       └── ci.yml                 # GitHub Actions CI pipeline
 ├── .env.example                   # Template env file (committed)
 ├── .env.local                     # Local env (ignored)
 ├── .env.production                # Production env (ignored)
