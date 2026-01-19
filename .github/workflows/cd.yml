@@ -1,4 +1,4 @@
-name: CD - DockerHub Push
+name: CD - DockerHub Push & AKS Deploy
 
 on:
   workflow_run:
@@ -38,3 +38,38 @@ jobs:
 
           docker push $IMAGE:latest
           docker push $IMAGE:$SHA_TAG
+
+
+  deploy-aks:
+    name: Deploy to AKS
+    needs: docker-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set AKS context
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: rg-shorturl-aks
+          cluster-name: shorturl-aks
+
+      - name: Apply Kubernetes manifests
+        run: |
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml
+
+      - name: Update image in deployment
+        run: |
+          kubectl set image deployment/shorturl \
+            shorturl=${{ secrets.DOCKERHUB_USERNAME }}/shorturl:latest
+
+      - name: Verify rollout
+        run: |
+          kubectl rollout status deployment/shorturl
