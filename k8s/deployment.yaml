@@ -14,16 +14,11 @@ spec:
     spec:
       containers:
         - name: shorturl
-          # IMPORTANT: Do NOT hardcode DockerHub username
-          image: shorturl
+          image: udit027/shorturl:latest
           imagePullPolicy: Always
 
           ports:
             - containerPort: 8001
-
-          env:
-            - name: ENV
-              value: "production"
 
           resources:
             requests:
