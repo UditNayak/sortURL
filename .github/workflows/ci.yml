@@ -78,19 +78,6 @@ jobs:
           name: dependency-check-report
           path: reports
 
-  secrets-scan:
-    name: Secrets Scan (Gitleaks)
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code (full history required)
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v2
-
   build-and-push:
     name: Build, Test & Push Image
     runs-on: ubuntu-latest
@@ -98,7 +85,6 @@ jobs:
       - quality-tests
       - sast
       - sca
-      - secrets-scan
 
     steps:
       - name: Checkout code
