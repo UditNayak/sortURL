@@ -143,11 +143,11 @@ jobs:
           sleep 5
           curl -f http://localhost:8001/api/health
 
-      - name: DAST (OWASP ZAP – Baseline)
-        uses: zaproxy/action-baseline@v0.11.0
+      - name: DAST (Nuclei)
+        uses: projectdiscovery/nuclei-action@v2
         with:
           target: http://localhost:8001
-          fail_action: false
+          severity: critical, high
 
       - name: Push image
         run: |
