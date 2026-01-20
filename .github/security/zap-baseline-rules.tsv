@@ -1,0 +1,10 @@
+# rule-id   action   comment
+
+10010   WARN    Cookie No HttpOnly Flag
+10011   WARN    Cookie Without Secure Flag
+10015   WARN    Re-examine Cache-control Directives
+10038   WARN    Content-Type Header Missing
+10020   WARN    X-Frame-Options Header Not Set
+10021   WARN    X-Content-Type-Options Header Missing
+10035   WARN    Strict-Transport-Security Header Not Set
+90004   WARN    Insufficient Site Isolation Against Spectre
