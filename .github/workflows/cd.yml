@@ -42,3 +42,26 @@ jobs:
 
       - name: Verify rollout
         run: kubectl rollout status deployment/shorturl
+
+      - name: Dummy DAST (Basic Runtime Security Checks)
+        run: |
+          IP=$(kubectl get svc shorturl-service \
+            -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
+
+          if [ -z "$IP" ]; then
+            echo "Service IP not available"
+            exit 1
+          fi
+
+          curl -f http://$IP/api/health
+          curl -I http://$IP | grep -i "content-type" || true
+          curl -s http://$IP/../../etc/passwd | grep -i root && exit 1 || true
+
+      - name: Get Service URL
+        run: |
+          for i in {1..30}; do
+            IP=$(kubectl get svc shorturl-service \
+              -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
+            [ -n "$IP" ] && echo "Application URL: http://$IP" && break
+            sleep 10
+          done

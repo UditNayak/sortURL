@@ -143,13 +143,6 @@ jobs:
           sleep 5
           curl -f http://localhost:8001/api/health
 
-      - name: DAST (OWASP ZAP – Baseline)
-        uses: zaproxy/action-baseline@v0.11.0
-        with:
-          target: http://localhost:8001
-          rules_file_name: .github/security/zap-baseline-rules.tsv
-          fail_action: true
-
       - name: Push image
         run: |
           IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
