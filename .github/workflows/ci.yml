@@ -144,7 +144,7 @@ jobs:
           curl -f http://localhost:8001/api/health
 
       - name: DAST (Nuclei)
-        uses: projectdiscovery/nuclei-action@v2
+        uses: projectdiscovery/nuclei-action@v1
         with:
           target: http://localhost:8001
           severity: critical, high
