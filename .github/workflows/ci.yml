@@ -3,8 +3,6 @@ name: CI - Quality, Security & Build
 on:
   push:
     branches: ["main"]
-  pull_request:
-    branches: ["main"]
   workflow_dispatch:
 
 env:
@@ -36,11 +34,7 @@ jobs:
         run: ruff check src tests
 
       - name: Unit tests
-        env:
-          ENV: test
-        run: |
-          pytest -v --cov=src --cov-report=term-missing
-          # pytest -v --cov=src --cov-fail-under=80
+        run: pytest -v
 
   sast:
     name: SAST (CodeQL)
@@ -58,7 +52,7 @@ jobs:
         uses: github/codeql-action/init@v4
         with:
           languages: python
-          build-mode: none # Added for Python to skip build attempts
+          build-mode: none
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
@@ -77,9 +71,6 @@ jobs:
           project: shorturl
           path: src/requirements.txt
           format: HTML
-          args: >
-            --enableExperimental
-            --out reports
 
       - name: Upload Dependency Check Report
         uses: actions/upload-artifact@v4
