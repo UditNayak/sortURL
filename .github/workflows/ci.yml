@@ -1,4 +1,4 @@
-name: CI
+name: CI - Quality, Security & Build
 
 on:
   push:
@@ -7,8 +7,13 @@ on:
     branches: ["main"]
   workflow_dispatch:
 
+env:
+  PYTHON_VERSION: "3.11"
+  IMAGE_NAME: shorturl
+
 jobs:
-  ci:
+  quality-tests:
+    name: Quality & Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -18,8 +23,8 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
-          cache: "pip"                # Enables dependency caching
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
           cache-dependency-path: src/requirements.txt
 
       - name: Install dependencies
@@ -27,25 +32,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r src/requirements.txt
 
-      - name: Run linting (ruff)
-        run: |
-          ruff check src tests
+      - name: Lint (ruff)
+        run: ruff check src tests
 
-      - name: Run tests
+      - name: Unit tests
         env:
           ENV: test
         run: |
           pytest -v --cov=src --cov-report=term-missing
-          
-          # -------------------------------
-          # Coverage Threshold (INTENTIONALLY DISABLED)
-          #
-          # To enable later, uncomment:
-          #
           # pytest -v --cov=src --cov-fail-under=80
-          # -------------------------------
 
-  sast-codeql:
+  sast:
     name: SAST (CodeQL)
     runs-on: ubuntu-latest
     permissions:
@@ -65,11 +62,9 @@ jobs:
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
-        with:
-          category: "/language:python"
 
-  sca-dependencies:
-    name: SCA (Dependency Check)
+  sca:
+    name: SCA (Dependencies Audit)
     runs-on: ubuntu-latest
 
     steps:
@@ -79,9 +74,9 @@ jobs:
       - name: Run OWASP Dependency-Check
         uses: dependency-check/Dependency-Check_Action@1.1.0
         with:
-          project: "shortURL"
-          path: "src/requirements.txt"
-          format: "HTML"
+          project: shorturl
+          path: src/requirements.txt
+          format: HTML
           args: >
             --enableExperimental
             --out reports
@@ -105,38 +100,56 @@ jobs:
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
 
-  container-security:
-    name: Container Build & Security Scan
+  build-and-push:
+    name: Build, Scan & Push Image
     runs-on: ubuntu-latest
     needs:
-      - ci
-      - sast-codeql
-      - sca-dependencies
+      - quality-tests
+      - sast
+      - sca
       - secrets-scan
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - uses: docker/setup-buildx-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker image
-        run: docker build -t shorturl:ci .
+      - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Trivy image scan
+      - name: Build image
+        run: |
+          IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
+          SHA_TAG=sha-${GITHUB_SHA::7}
+
+          docker build -t $IMAGE:latest -t $IMAGE:$SHA_TAG .
+
+      - name: Image scan (Trivy)
         uses: aquasecurity/trivy-action@0.24.0
         with:
-          image-ref: shorturl:ci
-          format: table
+          image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
           exit-code: 1
           severity: CRITICAL
 
-      - name: Run container
+      - name: Runtime check
         run: |
-          docker run -d -p 8001:8001 --name shorturl-test shorturl:ci
+          docker run -d -p 8001:8001 --name shorturl-test \
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
           sleep 5
+          curl -f http://localhost:8001/api/health
 
-      - name: Health check
-        run: curl -f http://localhost:8001/api/health
+      - name: Push image
+        run: |
+          IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
+          SHA_TAG=sha-${GITHUB_SHA::7}
+
+          docker push $IMAGE:latest
+          docker push $IMAGE:$SHA_TAG
 
       - name: Cleanup
         if: always()
